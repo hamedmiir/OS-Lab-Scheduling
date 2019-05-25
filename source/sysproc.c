@@ -103,3 +103,38 @@ sys_getprocs()
 {
   return getprocs();
 }
+
+void sys_set_burst_time()
+{
+  
+}
+void sys_set_priority()
+{
+  int priority;
+  argint(0, &priority);
+  int pid;
+  argint(1, &pid);
+  find_and_set_priority(priority, pid);
+}
+
+void sys_set_lottery_ticket(){
+  int lottery_ticket;
+  argint(0, &lottery_ticket);
+  int pid;
+  argint(1, &pid);
+  find_and_set_lottery_ticket(lottery_ticket , pid);
+}
+
+void sys_set_sched_queue()
+{
+  int qeue_number;
+  argint(0, &qeue_number);
+  int pid;
+  argint(1, &pid);
+  find_and_set_sched_queue(qeue_number, pid);
+}
+
+void sys_show_processes_scheduling()
+{
+  show_all_processes_scheduling();
+}

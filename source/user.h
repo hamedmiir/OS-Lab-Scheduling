@@ -39,3 +39,12 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
+
+//part 4 : sched
+int set_burst_time(int p, int pid); // must be changed!
+int set_priority(int p, int pid);
+int set_lottery_ticket(int l, int pid);
+int set_sched_queue(int q, int pid);
+int show_processes_scheduling();
+
+enum schedAlgorithms { ROUND_ROBIN , PRIORITY , SJF , LOTTERY};

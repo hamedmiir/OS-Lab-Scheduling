@@ -20,6 +20,10 @@ exec(char *path, char **argv)
   struct proc *curproc = myproc();
 
   begin_op();
+  //For testing priority
+
+  find_and_set_sched_queue(LOTTERY, curproc->pid);
+  find_and_set_lottery_ticket(500, curproc->pid);
 
   if((ip = namei(path)) == 0){
     end_op();

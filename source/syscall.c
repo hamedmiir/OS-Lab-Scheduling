@@ -105,6 +105,12 @@ extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_incNum(int);
 extern int sys_getprocs(void);
+//Part 4 : sched
+extern int sys_set_burst_time(void);
+extern int sys_set_priority(void);
+extern int sys_set_lottery_ticket(void);
+extern int sys_set_sched_queue(void);
+extern int sys_show_processes_scheduling(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -129,6 +135,11 @@ static int (*syscalls[])(void) = {
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
 [SYS_getprocs]   sys_getprocs,
+[SYS_set_burst_time] sys_set_burst_time,
+[SYS_set_priority] sys_set_priority,
+[SYS_set_lottery_ticket] sys_set_lottery_ticket,
+[SYS_set_sched_queue] sys_set_sched_queue,
+[SYS_show_processes_scheduling] sys_show_processes_scheduling,
 };
 
 void

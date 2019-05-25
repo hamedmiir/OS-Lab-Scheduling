@@ -7,6 +7,7 @@
 #include "proc.h"
 #include "spinlock.h"
 
+
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -15,6 +16,7 @@ struct {
 static struct proc *initproc;
 
 int nextpid = 1;
+int createdProcess = 1;
 extern void forkret(void);
 extern void trapret(void);
 
@@ -112,7 +114,12 @@ found:
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
   p->lottery_ticket = 1;
-
+  ‪acquire(&tickslock);
+  p->creation_time = ticks + createdProcess++;
+  p->process_count = process_number;
+  process_number++;
+  p->lottery_ticket = 50;
+  p->schedQueue = LOTTERY;
   return p;
 }
 
@@ -614,13 +621,150 @@ lotterySched(void){
       isLotterySelected = 2;
     }
   }
-   
     if(isLotterySelected != 0) {
       return highLottery_ticket;
     }
-    
-    
-    return 0;
+    return 0;  
+}
 
+struct proc*
+prioritySched(void)
+{
+  struct proc *p;
   
+ 
+  int priorityProcessSelected = 0;
+  struct proc *highPriority = 0; //process with highest priority
+  // Enable interrupts on this processor.
+  priorityProcessSelected = 0;
+
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->state != RUNNABLE || p->schedQueue != PRIORITY)
+      continue;
+
+    if(!priorityProcessSelected)
+    {
+      highPriority = p;
+      priorityProcessSelected = 1;
+    }
+    if(highPriority->priority > p->priority )
+      highPriority = p;
+  }
+  if(priorityProcessSelected )
+  {
+    
+    return highPriority;
+  }
+  
+  return 0;
+
+}
+
+// scheduling algorithm
+struct proc*
+SJFSched(void)
+{
+  struct proc *p;
+ 
+  int earliestProcessSelected = 0;
+  struct proc *earliestTime = 0; //process that come earlier
+  
+  
+    earliestProcessSelected = 0;
+
+      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+        if(p->state != RUNNABLE || p->schedQueue != SJF)
+          continue;
+        if(!earliestProcessSelected){
+          earliestTime = p;
+          earliestProcessSelected = 1;
+        }
+        if(earliestTime->creation_time > p->creation_time)
+          earliestTime = p;
+
+    }
+    if(earliestProcessSelected)
+    {
+      return earliestTime;
+    }
+  return 0;
+}
+
+void find_and_set_priority(int priority , int pid)
+{
+  struct proc *p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(pid == p->pid)
+    {
+      p -> priority = priority;
+      break;
+    }
+  }
+}
+
+void find_and_set_lottery_ticket(int lottery_ticket , int pid){
+  struct proc *p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(pid == p->pid)
+    {
+      p -> lottery_ticket = lottery_ticket;
+      break;
+    }
+  }
+}
+
+void 
+find_and_set_sched_queue(int qeue_number, int pid)
+{
+  struct proc *p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(pid == p->pid)
+    {
+      p -> schedQueue = qeue_number;
+      break;
+    }
+  }
+}
+
+void
+scheduler(void)
+{
+  struct proc *p;  
+  struct cpu *c = mycpu();
+  c->proc = 0;
+  for(;;){
+    // Enable interrupts on this processor.
+    sti();
+    // Loop over process table looking for process to run.
+    acquire(&ptable.lock);
+    p = lotterySched();
+    
+    if(p == 0)
+      p = SJFSched();
+    if(p == 0)
+      p = prioritySched();
+    if(p !=0 ) {
+      // Switch to chosen process.  It is the process's job
+      // to release ptable.lock and then reacquire it
+      // before jumping back to us.
+      c->proc = p;
+      switchuvm(p);
+      p->state = RUNNING;
+
+      swtch(&(c->scheduler), p->context);
+      switchkvm();
+      // Process is done running for now.
+      // It should have changed its p->state before coming back.
+      c->proc = 0;
+    }
+
+    release(&ptable.lock);
+  }
+}
+
+int generate_random(int toMod)
+{
+  int random;
+  random = (12345678 + ticks*ticks*ticks*ticks) % toMod;
+  return random;
 }
