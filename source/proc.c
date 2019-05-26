@@ -830,7 +830,7 @@ show_all_processes_scheduling()
   for(i = 0 ; i < 3; i++)
     cprintf(" ");
   cprintf("createTime");
-  for(i = 0 ; i < 3; i++)
+  for(i = 0 ; i < 2; i++)
     cprintf(" ");
   cprintf("number\n");
   cprintf("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \n");
@@ -903,4 +903,3 @@ scheduler(void)
     release(&ptable.lock);
   }
 }
-

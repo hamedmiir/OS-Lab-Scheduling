@@ -262,6 +262,7 @@ EXTRA=\
 	myproc.c\
 	printf.c umalloc.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
+	schedTest.c setPriority.c setLottery.c setQueue.c ps.c sf.c setBurstTime.c\
 	.gdbinit.tmpl gdbutil\
 
 dist:

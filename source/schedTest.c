@@ -87,6 +87,7 @@ void SJFTest(){
             if(pid > 0)
             {
                 set_sched_queue(SJF, pid);
+                set_burst_time(10 + 2*i, pid);
             }
             if(pid == 0 )
                 break;
@@ -186,11 +187,12 @@ void multilevelQueue() {
                 else if( i < NCHILD * 2)
                 {
                     set_sched_queue(SJF, pid);
+                    set_burst_time(NCHILD * 5 - i, pid);
                 }
                 else if( i < NCHILD * 3)
                 {
                     set_sched_queue(LOTTERY, pid);
-                    set_lottery_ticket(NCHILD * 3 - i, pid);
+                    set_lottery_ticket(NCHILD * 4 - i, pid);
                 }
                 
             }
@@ -224,6 +226,6 @@ void multilevelQueue() {
         int i;
         for(i = 0; i < NCHILD * 3 ; i++)
             wait();
-        printf(1, "main program wirh pid %d finished\n", getpid());
+        printf(1, "main program with pid %d finished\n", getpid());
     }
 }
