@@ -53,6 +53,7 @@ struct proc {
   int schedQueue;              //
   int priority;                // Priority for priorityScheduling 
   long int burst_time;         // burst time for proccess using in SJF algorithm
+  long int creation_time;
   int process_count;
 };
 

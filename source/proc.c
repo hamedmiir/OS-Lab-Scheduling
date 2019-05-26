@@ -117,7 +117,7 @@ found:
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
   p->lottery_ticket = 1;
-
+  p->creation_time = ticks + createdProcess++;
   p->process_count = process_number;
   process_number++;
   p->lottery_ticket = 50;
@@ -829,6 +829,9 @@ show_all_processes_scheduling()
   cprintf("burstTime");
   for(i = 0 ; i < 3; i++)
     cprintf(" ");
+  cprintf("createTime");
+  for(i = 0 ; i < 3; i++)
+    cprintf(" ");
   cprintf("number\n");
   cprintf("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \n");
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
@@ -856,6 +859,9 @@ show_all_processes_scheduling()
       cprintf(" ");
     cprintf("%d  ", p->burst_time);
         for(i = 0 ; i < 10 - int_size(p->burst_time); i++)
+      cprintf(" ");
+    cprintf("%d  ", p->creation_time);
+        for(i = 0 ; i < 10 - int_size(p->creation_time); i++)
       cprintf(" ");
     cprintf("%d  " , p->process_count);
     cprintf("\n");
