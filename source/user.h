@@ -39,6 +39,9 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
+// int int_size(int i);
+
+void delay(int numberOfClocks);
 
 //part 4 : sched
 int set_burst_time(); // must be changed!
