@@ -15,6 +15,6 @@ int main(int argc, char const *argv[])
     printf(1, "enter burst time : ");
     read(1, buf, 1024);
     burst_time = atoi(buf);
-    set(burst_time, pid);
+    set_burst_time(burst_time, pid);
     exit();
 }

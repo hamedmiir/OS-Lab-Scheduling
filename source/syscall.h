@@ -23,7 +23,7 @@
 #define SYS_incNum 22
 #define SYS_getprocs 23
 //Part 4 
-#define sys_set_burst_time 24
+#define SYS_set_burst_time 24
 #define SYS_set_priority 25
 #define SYS_set_lottery_ticket 26
 #define SYS_set_sched_queue 27

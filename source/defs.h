@@ -125,6 +125,7 @@ struct proc*    lotterySched(void);
 void            find_and_set_priority(int priority, int pid);
 void            find_and_set_lottery_ticket(int lottery_ticket , int pid);
 void            find_and_set_sched_queue(int qeue_number, int pid);
+void            find_and_set_burst_time(int burst_time, int pid);
 void            show_all_processes_scheduling();
 
 extern int      process_number;

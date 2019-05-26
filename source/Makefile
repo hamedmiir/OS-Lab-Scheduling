@@ -182,7 +182,13 @@ UPROGS=\
 	_wc\
 	_zombie\
 	_middle\
-	_myproc\
+	_schedTest\
+	_sf\
+	_setPriority\
+	_setLottery\
+	_setQueue\
+	_ps\
+	_setBurstTime\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)

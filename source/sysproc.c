@@ -106,7 +106,11 @@ sys_getprocs()
 
 void sys_set_burst_time()
 {
-  
+  int burst_time;
+  argint(0, &burst_time);
+  int pid;
+  argint(1, &pid);
+  find_and_set_burst_time(burst_time , pid);
 }
 void sys_set_priority()
 {

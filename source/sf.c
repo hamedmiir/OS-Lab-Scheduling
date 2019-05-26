@@ -3,6 +3,7 @@
 #include "fcntl.h" // for using file defines
 #include "user.h" // for using from strlen
 
+
 #define NCHILD 1
 
 void createBoundingProcess();
@@ -25,7 +26,7 @@ void createBoundingProcess() {
     {
         int i;
         for(i = 0 ; i < 900000 ; i++)
-            delay(2000000000);
+            sleep(2000000000);
     }
     else
     {

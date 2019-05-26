@@ -6,7 +6,10 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "syscall.h"
 
+
+int process_number;
 
 struct {
   struct spinlock lock;
@@ -114,8 +117,7 @@ found:
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
   p->lottery_ticket = 1;
-  ‪acquire(&tickslock);
-  p->creation_time = ticks + createdProcess++;
+
   p->process_count = process_number;
   process_number++;
   p->lottery_ticket = 50;
@@ -327,41 +329,41 @@ wait(void)
 //  - swtch to start running that process
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
-void
-scheduler(void)
-{
-  struct proc *p;
-  struct cpu *c = mycpu();
-  c->proc = 0;
+// void
+// scheduler(void)
+// {
+//   struct proc *p;
+//   struct cpu *c = mycpu();
+//   c->proc = 0;
   
-  for(;;){
-    // Enable interrupts on this processor.
-    sti();
+//   for(;;){
+//     // Enable interrupts on this processor.
+//     sti();
 
-    // Loop over process table looking for process to run.
-    acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
-        continue;
+//     // Loop over process table looking for process to run.
+//     acquire(&ptable.lock);
+//     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+//       if(p->state != RUNNABLE)
+//         continue;
 
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
+//       // Switch to chosen process.  It is the process's job
+//       // to release ptable.lock and then reacquire it
+//       // before jumping back to us.
+//       c->proc = p;
+//       switchuvm(p);
+//       p->state = RUNNING;
 
-      swtch(&(c->scheduler), p->context);
-      switchkvm();
+//       swtch(&(c->scheduler), p->context);
+//       switchkvm();
 
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
-      c->proc = 0;
-    }
-    release(&ptable.lock);
+//       // Process is done running for now.
+//       // It should have changed its p->state before coming back.
+//       c->proc = 0;
+//     }
+//     release(&ptable.lock);
 
-  }
-}
+//   }
+// }
 
 // Enter scheduler.  Must hold only ptable.lock
 // and have changed proc->state. Saves and restores
@@ -584,6 +586,13 @@ getprocs(void)
   return 23;
 }
 
+int generate_random(int toMod)
+{
+  int random;
+  random = (12345678 + ticks*ticks*ticks*ticks) % toMod;
+  return random;
+}
+
 struct proc*
 lotterySched(void){
   struct proc *p;
@@ -627,6 +636,7 @@ lotterySched(void){
     return 0;  
 }
 
+
 struct proc*
 prioritySched(void)
 {
@@ -666,26 +676,26 @@ SJFSched(void)
 {
   struct proc *p;
  
-  int earliestProcessSelected = 0;
-  struct proc *earliestTime = 0; //process that come earlier
+  int shortestProcessSelected = 0;
+  struct proc *shortestTime = 0; //process that come earlier
   
   
-    earliestProcessSelected = 0;
+    shortestProcessSelected = 0;
 
       for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
         if(p->state != RUNNABLE || p->schedQueue != SJF)
           continue;
-        if(!earliestProcessSelected){
-          earliestTime = p;
-          earliestProcessSelected = 1;
+        if(!shortestProcessSelected){
+          shortestTime = p;
+          shortestProcessSelected = 1;
         }
-        if(earliestTime->creation_time > p->creation_time)
-          earliestTime = p;
+        if(shortestTime->burst_time > p->burst_time)
+          shortestTime = p;
 
     }
-    if(earliestProcessSelected)
+    if(shortestProcessSelected)
     {
-      return earliestTime;
+      return shortestTime;
     }
   return 0;
 }
@@ -726,6 +736,132 @@ find_and_set_sched_queue(int qeue_number, int pid)
   }
 }
 
+void 
+find_and_set_burst_time(int burst_time, int pid)
+{
+  struct proc *p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(pid == p->pid)
+    {
+      p -> burst_time = burst_time;
+      break;
+    }
+  }
+}
+
+char* print_state(int state){
+  if(state == 0){
+    return "UNUSED";
+  }else if(state == 1){
+    return "EMBRYO";
+  }else if(state == 2){
+    return "SLEEPING";
+  }else if(state == 3){
+    return "RUNNABLE";
+  }else if(state == 4){
+    return "RUNNING";
+  }else if(state == 5){
+    return "ZOMBIE";
+  }else{
+    return "";
+  }
+}
+
+int int_size(int i){
+    if( i >= 1000000000) return 10;
+    if( i >= 100000000)  return 9;
+    if( i >= 10000000)   return 8;
+    if( i >= 1000000)    return 7;
+    if( i >= 100000)     return 6;
+    if( i >= 10000)      return 5;
+    if( i >= 1000)       return 4;
+    if( i >= 100)        return 3;
+    if( i >= 10)         return 2;
+                        return 1;
+}
+
+char* find_queue_name(int queue){
+  if(queue == 3){
+    return "PRIORITY";
+  }else if(queue == 2){
+    return "SJF";
+  }else if(queue == 1){
+    return "LOTTERY";
+  }else{
+    return "";
+  }
+}
+
+void
+show_all_processes_scheduling()
+{
+  struct proc *p;
+  int name_spaces = 0;
+  int i = 0 ;
+  char* state;
+  char* queue_name;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->pid == 0)
+      continue;
+    if( name_spaces < strlen(p->name))
+      name_spaces = strlen(p->name);
+  }
+
+  cprintf("name");
+  for(i = 0 ; i < name_spaces - strlen("name") + 3 ; i++)
+    cprintf(" ");
+  
+  cprintf("pid");
+  for(i = 0 ; i < 4; i++)
+    cprintf(" ");
+  cprintf("state");
+  for(i = 0 ; i < 6; i++)
+    cprintf(" ");
+  cprintf("queue");
+  for(i = 0 ; i < 5; i++)
+    cprintf(" ");
+  cprintf("priority");
+  for(i = 0 ; i < 3; i++)
+    cprintf(" ");
+  cprintf("lottery");
+  for(i = 0 ; i < 3; i++)
+    cprintf(" ");
+  cprintf("burstTime");
+  for(i = 0 ; i < 3; i++)
+    cprintf(" ");
+  cprintf("number\n");
+  cprintf("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \n");
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->pid == 0)
+      continue;
+    cprintf("%s", p->name);
+    for(i = 0 ; i < name_spaces - strlen(p->name) + 4 ; i++)
+      cprintf(" ");
+    cprintf("%d", p->pid);
+    for(i = 0 ; i < 6 - int_size(p->pid); i++)
+      cprintf(" ");
+    state = print_state(p->state);
+    cprintf("%s" , state);
+    for(i = 0 ; i < 11 - strlen(state); i++)
+      cprintf(" ");
+    queue_name =  find_queue_name(p->schedQueue);
+    cprintf("%s ", queue_name);
+    for(i = 0 ; i < 12 - strlen(queue_name); i++)
+      cprintf(" ");
+    cprintf("%d  ", p->priority);
+    for(i = 0 ; i < 8 - int_size(p->priority); i++)
+      cprintf(" ");
+    cprintf("%d  ", p->lottery_ticket);
+    for(i = 0 ; i < 10 - int_size(p->lottery_ticket); i++)
+      cprintf(" ");
+    cprintf("%d  ", p->burst_time);
+        for(i = 0 ; i < 10 - int_size(p->burst_time); i++)
+      cprintf(" ");
+    cprintf("%d  " , p->process_count);
+    cprintf("\n");
+  }
+}
+
 void
 scheduler(void)
 {
@@ -762,9 +898,3 @@ scheduler(void)
   }
 }
 
-int generate_random(int toMod)
-{
-  int random;
-  random = (12345678 + ticks*ticks*ticks*ticks) % toMod;
-  return random;
-}

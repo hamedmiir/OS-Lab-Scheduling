@@ -52,7 +52,6 @@ struct proc {
   int lottery_ticket;          // Scheduling
   int schedQueue;              //
   int priority;                // Priority for priorityScheduling 
-  long int creation_time;      // creat time for process using ticks
   long int burst_time;         // burst time for proccess using in SJF algorithm
   int process_count;
 };
