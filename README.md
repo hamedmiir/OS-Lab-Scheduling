@@ -1,9 +1,9 @@
 xv6 Scheduling
 4th phase of project of Operating System Lab course.
-> Implement Shortes Job First Scheduling, Priority Scheduling and Lottery Scheduling in xv6.
+> Implement some scheduling methodes includes Shortest Job First, Priority and Lottery Ticket in xv6.
 
 ### Run
-> Compile file and run using Qemu
+> Compile files and run using Qemu
 
 ```shell
 $ make
