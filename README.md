@@ -1,5 +1,14 @@
-# OS-Lab-Scheduling
-4th phase of Operating System Lab course.
+xv6 Scheduling
+4th phase of project of Operating System Lab course.
+> Implement Shortes Job First Scheduling, Priority Scheduling and Lottery Scheduling in xv6.
+
+### Run
+> Compile file and run using Qemu
+
+```shell
+$ make
+$ make qemu
+
 
 xv6 is a re-implementation of Dennis Ritchie's and Ken Thompson's Unix
 Version 6 (v6).  xv6 loosely follows the structure and style of v6,
