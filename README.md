@@ -8,6 +8,7 @@ xv6 Scheduling
 ```shell
 $ make
 $ make qemu
+```
 
 
 xv6 is a re-implementation of Dennis Ritchie's and Ken Thompson's Unix
